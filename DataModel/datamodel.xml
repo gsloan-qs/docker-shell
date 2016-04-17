@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DataModelInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns="http://schemas.qualisystems.com/ResourceManagement/DataModelSchema.xsd">
+  <Attributes>
+      <AttributeInfo Name="Docker Host" Type="String" DefaultValue="" IsReadOnly="false">
+        <Rules>
+          <Rule Name="Configuration" />
+          <Rule Name="Setting" />
+        </Rules>
+      </AttributeInfo>
+      <AttributeInfo Name="Docker Image" Type="String" DefaultValue="" IsReadOnly="false">
+        <Rules>
+          <Rule Name="Configuration" />
+          <Rule Name="Setting" />
+        </Rules>
+      </AttributeInfo>
+      <AttributeInfo Name="Container Env" Type="String" DefaultValue="" IsReadOnly="false">
+        <Rules>
+          <Rule Name="Configuration" />
+          <Rule Name="Setting" />
+        </Rules>
+      </AttributeInfo>
+      <AttributeInfo Name="Container Ports" Type="String" DefaultValue="" IsReadOnly="false">
+        <Rules>
+          <Rule Name="Configuration" />
+          <Rule Name="Setting" />
+        </Rules>
+      </AttributeInfo>
+      <AttributeInfo Name="Private IP" Type="String" DefaultValue="" IsReadOnly="false">
+        <Rules>
+          <Rule Name="Configuration" />
+          <Rule Name="Setting" />
+        </Rules>
+      </AttributeInfo>
+  </Attributes>
+  <ResourceFamilies>
+    <ResourceFamily Description="" IsService="true" Name="Deployment Options" ServiceType="Deployment">
+        <AttachedAttributes />
+        <AttributeValues />
+        <Models>
+          <ResourceModel Description="" Name="Docker Image" SupportsConcurrentCommands="false">
+            <AttachedAttributes>
+            <AttachedAttribute IsLocal="true" IsOverridable="true" Name="Docker Host" UserInput="true">
+              <AllowedValues />
+            </AttachedAttribute>
+              <AttachedAttribute IsLocal="true" IsOverridable="true" Name="Docker Image" UserInput="true">
+                <AllowedValues />
+              </AttachedAttribute>
+  			<AttachedAttribute IsLocal="true" IsOverridable="true" Name="Container Env" UserInput="true">
+                <AllowedValues />
+              </AttachedAttribute>
+              <AttachedAttribute IsLocal="true" IsOverridable="true" Name="Container Ports" UserInput="true">
+                <AllowedValues />
+              </AttachedAttribute>
+          </AttachedAttributes>
+            <AttributeValues>
+              <AttributeValue Name="Docker Host" Value="" />
+              <AttributeValue Name="Docker Image" Value="" />
+  			  <AttributeValue Name="Container Env" Value="" />
+              <AttributeValue Name="Container Ports" Value="" />
+          </AttributeValues>
+            <ParentModels />
+            <Drivers>
+              <DriverName>Generic Driver</DriverName>
+            </Drivers>
+            <Scripts>
+              <ScriptName>Deploy</ScriptName>
+            </Scripts>
+          </ResourceModel>
+        </Models>
+        <Categories>
+          <Category>Virtualization</Category>
+        </Categories>
+      </ResourceFamily>
+    <ResourceFamily Name="Docker Host" IsConnectable="false" IsLockedByDefault="true" Description="" IsSearchable="true" ResourceType="Resource">
+        <AttachedAttributes>
+            <AttachedAttribute IsLocal="true" IsOverridable="true" Name="Private IP" UserInput="true">
+              <AllowedValues />
+            </AttachedAttribute>
+        </AttachedAttributes>
+      <AttributeValues>
+        <AttributeValue Name="Private IP" Value="" />
+      </AttributeValues>
+      <Models>
+        <ResourceModel Name="Generic Docker Host" Description="" SupportsConcurrentCommands="true">
+          <AttachedAttributes />
+          <AttributeValues>
+          </AttributeValues>
+          <ParentModels>
+          </ParentModels>
+          <Drivers>
+              <DriverName>DockerHostDriver</DriverName>
+          </Drivers>
+          <Scripts />
+        </ResourceModel>
+      </Models>
+      <Categories />
+    </ResourceFamily>
+  </ResourceFamilies>
+  <DriverDescriptors>
+      <DriverDescriptor Name="DockerHostDriver" DriverType="PythonDriver" />
+  </DriverDescriptors>
+  <ScriptDescriptors>
+      <ScriptDescriptor Name="docker_deployment" Version="1.0.0" Alias="Deploy">
+        <ScriptInputs>
+          <ScriptInput Name="Name" />
+        </ScriptInputs>
+      </ScriptDescriptor>
+  </ScriptDescriptors>
+</DataModelInfo>

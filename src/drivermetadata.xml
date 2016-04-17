@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Driver Name="DockerHostDriver" Version="1.0.0" MainClass="dockerhostdriver.DockerHostDriver" Description="driver description">
+    <Layout>
+        <Category Name="Management">
+
+            <Command Description="" DisplayName="Show logs" Name="show_logs" Tags="remote_management,allow_shared" />
+            <Command Description="" DisplayName="Inspect" Name="inspect" Tags="remote_management,allow_shared" />
+
+
+          <Command Name="deployImage" DisplayName="Deploy Image" Description="an example command" Tags="allow_unreserved">
+               <Parameters>
+                 <Parameter Name="image" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
+                   <Parameter Name="env" Type="String" Mandatory = "True" DefaultValue="" DisplayName="env" Description=""/>
+                 <Parameter Name="port_config" Type="String" Mandatory = "True" DefaultValue="" DisplayName="port_config" Description=""/>
+
+                </Parameters>
+          </Command>
+
+          <Command Name="destroy" DisplayName="Destroy container" Description="an example command" Tags="remote_virtualization,allow_shared">
+          </Command>
+         <Command Name="power_on" DisplayName="Power On" Description="an example command" Tags="allow_unreserved">
+           <Parameters>
+
+               <Parameter Name="vm_uuid" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
+               <Parameter Name="resource_fullname" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
+
+           </Parameters>
+          </Command>
+            <Command Description="" DisplayName="Refresh Ip" Name="remote_refresh_ip" Tags="remote_connectivity,allow_shared" />
+
+        </Category>
+        <Category Name="Connectivity">
+            <Command Description="" DisplayName="Refresh Ip" Name="remote_refresh_ip" Tags="remote_connectivity,allow_shared" />
+        </Category>
+        <Category Name="Power">
+            <Command Description="" DisplayName="Power On" Name="PowerOn" Tags="power" />
+            <Command Description="" DisplayName="Power Off" Name="PowerOff" Tags="power,allow_shared" />
+            <Command Description="" DisplayName="Power Cycle" Name="PowerCycle" Tags="power" />
+        </Category>
+    </Layout>
+</Driver>
