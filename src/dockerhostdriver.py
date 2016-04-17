@@ -165,22 +165,6 @@ class DockerHostDriver (ResourceDriverInterface):
         response = requests.get('{address}/containers/{uid}/logs?stdout=1'.format(address=address, uid=uid) )
         return response.content
 
-    def PowerOn(self, context, ports):
-        """
-        Powers on the remote vm
-        :param cloudshell.shell.core.driver_context.ResourceRemoteCommandContext context: the context the command runs on
-        :param list[string] ports: OBSOLETE the ports of the connection between the remote resource and the local resource
-        """
-        vm_info_json =context.remote_endpoints[0].app_context.deployed_app_json
-        vm_info_obj = json.loads(vm_info_json)
-        uid = vm_info_obj['vmdetails']['uid']
-        log = ""
-        address = context.resource.address
-
-        response = requests.post('{address}/containers/{uid}/start'.format(address=address, uid=uid) )
-        log+=str(response.status_code) + ": " + response.content
-        return log
-
     def power_on(self, context, vm_uuid, resource_fullname):
         uid = vm_uuid
         log = ""
