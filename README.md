@@ -16,7 +16,7 @@ A deployment type Shell for CloudShell apps.
 5. In the next page, optionally provide the private IP of the container if hosted under amazon or other cloud provider
 6. If the host is a swarm host, repeat steps 1-5 to add the different nodes
 
-### Create a new app witha docker image Deployment Type
+### Create a new app with a docker image Deployment Type
 1. Navigate to the 'Manage Tab' on the CloudShell Portal
 2. Select Apps and click the 'Add' link
 3. Select the 'Docker Image' deployment type and enter a name for the app
@@ -35,6 +35,12 @@ A deployment type Shell for CloudShell apps.
 3. Select the App you've created in the previous step or a different app with docker deployment configured
 4. Hover on the app component and select the '>' icon representing 'commands' from the radial menu
 5. Run the 'Deploy App' command 
+
+## Build
+1. Download the latest [ShellFoundry](https://github.com/QualiSystems/shellfoundry) release 
+2. Make open the repo folder in your preferred Python IDE
+3. After making changes, run ShellFoundry Package to create a new shell
+4. Import the Shell to CloudShell to test the changes
 
 ## Contributing
 
