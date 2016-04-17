@@ -5,9 +5,9 @@ A deployment type Shell for CloudShell apps.
 * **scripts** A python script for the Docker Image deployment type, simply invokes the relevant operations on the driver
 * **DataModel** The relevant attributes, structure and metadata for representing Docker Hosts and deployment parameters
 
-Installation
+## Installation
 
-## Configuring a new Host
+### Configuring a new Host
 
 1. Get CloudShell free SDK and install using the installation instructions. Open the CloudShell Portal.
 2. Import dockerShell.zip published in the latest release into CloudShell via Admin -> import Package
@@ -16,7 +16,7 @@ Installation
 5. In the next page, optionally provide the private IP of the container if hosted under amazon or other cloud provider
 6. If the host is a swarm host, repeat steps 1-5 to add the different nodes
 
-## Create a new app witha docker image Deployment Type
+### Create a new app witha docker image Deployment Type
 1. Navigate to the 'Manage Tab' on the CloudShell Portal
 2. Select Apps and click the 'Add' link
 3. Select the 'Docker Image' deployment type and enter a name for the app
@@ -29,14 +29,14 @@ Installation
 6. Click on 'Settings' and add the app to the default 'Applications' category.
 7. Click 'Done'
 
-## Deploy the app to a sandbox
+### Deploy the app to a sandbox
 1. Create a new sandbox
 2. Click on +Apps/Services
 3. Select the App you've created in the previous step or a different app with docker deployment configured
 4. Hover on the app component and select the '>' icon representing 'commands' from the radial menu
 5. Run the 'Deploy App' command 
 
-##Contributing
+## Contributing
 
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
