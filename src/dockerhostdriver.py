@@ -42,9 +42,7 @@ class DockerHostDriver (ResourceDriverInterface):
         :return The JSON response and HTTP status code
         :rtype str
         """
-        vm_info_json =context.remote_endpoints[0].app_context.deployed_app_json
-        vm_info_obj = json.loads(vm_info_json)
-        uid = vm_info_obj['vmdetails']['uid']
+        uid = self._get_vm_uui(context)
         log = ""
         address = context.resource.address
         response = requests.post('{address}/containers/{uid}/stop'.format(address=address, uid=uid) )
@@ -54,6 +52,12 @@ class DockerHostDriver (ResourceDriverInterface):
         session = CloudShellAPISession(host=context.connectivity.server_address,token_id=context.connectivity.admin_auth_token,domain='Global')
         session.DeleteResource(context.remote_endpoints[0].name)
         return log
+
+    def _get_vm_uui(self, context):
+        vm_info_json = context.remote_endpoints[0].app_context.deployed_app_json
+        vm_info_obj = json.loads(vm_info_json)
+        uid = vm_info_obj['vmdetails']['uid']
+        return uid
 
     def deploy_image(self, context, image, env, port_config):
         """
@@ -77,7 +81,7 @@ class DockerHostDriver (ResourceDriverInterface):
         address = context.resource.address
         response = None
         try:
-            response = requests.post('{address}:4000/containers/create'.format(address=address),
+            response = requests.post('{address}/containers/create'.format(address=address),
                                      create_request_data)
 
         except Exception as e:
@@ -145,12 +149,9 @@ class DockerHostDriver (ResourceDriverInterface):
                                     port=context.connectivity.cloudshell_api_port)
 
 
-
     def inspect(self, context, ports ):
         address = context.resource.address
-        vm_info_json =context.remote_endpoints[0].app_context.deployed_app_json
-        vm_info_obj = json.loads(vm_info_json)
-        uid = vm_info_obj['vmdetails']['uid']
+        uid = self._get_vm_uui(context)
         response = requests.get('{address}/containers/{uid}/json'.format(address=address, uid=uid) )
         result = response.json()
         return result
@@ -159,13 +160,11 @@ class DockerHostDriver (ResourceDriverInterface):
     # the name is by the Qualisystems conventions
     def show_logs(self, context, ports):
         address = context.resource.address
-        vm_info_json =context.remote_endpoints[0].app_context.deployed_app_json
-        vm_info_obj = json.loads(vm_info_json)
-        uid = vm_info_obj['vmdetails']['uid']
+        uid = self._get_vm_uui(context)
         response = requests.get('{address}/containers/{uid}/logs?stdout=1'.format(address=address, uid=uid) )
         return response.content
 
-    def power_on(self, context, vm_uuid, resource_fullname):
+    def power_on(self, context, vm_uuid):
         uid = vm_uuid
         log = ""
         address = context.resource.address
@@ -173,6 +172,26 @@ class DockerHostDriver (ResourceDriverInterface):
         response = requests.post('{address}/containers/{uid}/start'.format(address=address, uid=uid) )
         log+=str(response.status_code) + ": " + response.content
         return log
+
+
+    def PowerOn(self, context, ports):
+        """
+        Powers off the remote vm
+        :param models.QualiDriverModels.ResourceRemoteCommandContext context: the context the command runs on
+        :param list[string] ports: the ports of the connection between the remote resource and the local resource, NOT IN USE!!!
+        """
+        uid = self._get_vm_uui(context)
+        self.power_on(context,uid)
+
+
+    def PowerOff(self, context, ports):
+        uid = self._get_vm_uui(context)
+        address = context.resource.address
+        requests.post('{address}/containers/{uid}/stop'.format(address=address, uid=uid))
+
+    # the name is by the Qualisystems conventions
+    def PowerCycle(self, context, ports, delay):
+        pass
 
     def _wrapInParenthesis(self, value):
         value = value.strip()

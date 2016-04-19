@@ -7,7 +7,7 @@
             <Command Description="" DisplayName="Inspect" Name="inspect" Tags="remote_management,allow_shared" />
 
 
-          <Command Name="deployImage" DisplayName="Deploy Image" Description="an example command" Tags="allow_unreserved">
+          <Command Name="deploy_image" DisplayName="Deploy Image" Description="Deploys a docker container from image" Tags="allow_unreserved">
                <Parameters>
                  <Parameter Name="image" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
                    <Parameter Name="env" Type="String" Mandatory = "True" DefaultValue="" DisplayName="env" Description=""/>
@@ -22,7 +22,7 @@
            <Parameters>
 
                <Parameter Name="vm_uuid" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
-               <Parameter Name="resource_fullname" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
+               <Parameter Name="resource_fullname" Type="String" Mandatory = "True" DefaultValue="s" DisplayName="image" Description=""/>
 
            </Parameters>
           </Command>
