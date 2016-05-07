@@ -3,7 +3,7 @@
 import requests
 from cloudshell.api.cloudshell_api import CloudShellAPISession, ResourceAttributesUpdateRequest, AttributeNameValue
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-
+import uuid
 
 class DockerHostDriver (ResourceDriverInterface):
     def __init__(self):
@@ -42,16 +42,12 @@ class DockerHostDriver (ResourceDriverInterface):
         :return The JSON response and HTTP status code
         :rtype str
         """
-        uid = self._get_vm_uui(context)
-        log = ""
-        address = context.resource.address
-        response = requests.post('{address}/containers/{uid}/stop'.format(address=address, uid=uid) )
-        log+=str(response.status_code) + ": " + response.content
-        response = requests.delete('{address}/containers/{uid}'.format(address=address, uid=uid) )
-        log = log + '\n' + str(response.status_code) + ": " + response.content
+        log = self.destroy_vm_only(context,ports)
         session = CloudShellAPISession(host=context.connectivity.server_address,token_id=context.connectivity.admin_auth_token,domain='Global')
         session.DeleteResource(context.remote_endpoints[0].name)
         return log
+
+
 
     def _get_vm_uui(self, context):
         vm_info_json = context.remote_endpoints[0].app_context.deployed_app_json
@@ -59,11 +55,20 @@ class DockerHostDriver (ResourceDriverInterface):
         uid = vm_info_obj['vmdetails']['uid']
         return uid
 
-    def deploy_image(self, context, image, env, port_config):
+    def _get_remote_name(self, context):
+        """
+        :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
+
+        """
+        return context.remote_endpoints[0].name
+
+    def deploy_image(self, context, app_name, image, env, port_config):
         """
         Deploys a container from an image
         :param context: This is the execution context automatically injected by CloudShell when running this command
         :type context: cloudshell.shell.core.driver_context.ResourceCommandContext
+        :param app_name: The name of the app being deployed
+        :type app_name: str
         :param image: The docker image to create the container from
         :type image: str
         :param env: Environment variables to use for the container, provided as comma separated list of name=value
@@ -92,10 +97,31 @@ class DockerHostDriver (ResourceDriverInterface):
                                                                        "response" + response.content)
 
         container_id = response.json()["Id"]
+        app_unique_name = app_name + "_" + str(uuid.uuid4())[0:4]
+        result = '{ "vm_name" : "%s", "vm_uuid" : "%s", "cloud_provider_resource_name" : "%s"}' % (app_unique_name ,container_id, context.resource.name)
 
-        str = '{ "vm_name" : "%s", "vm_uuid" : "%s", "cloud_provider_resource_name" : "%s"}' % (image.replace('/','_').replace(':','_') ,container_id, context.resource.name)
+        return json.loads(result)
 
-        return json.loads(str)
+
+
+    def destroy_vm_only(self, context, ports):
+        """
+         Destroys only the containers (without the associated CloudShell resource) For internal purposes only
+         :param context: This is the execution context automatically injected by CloudShell when running this command
+         :type context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
+         :param ports: OBSOLETE - information on the remote ports
+         :type ports: str
+
+         """
+        uid = self._get_vm_uui(context)
+        log = ""
+        address = context.resource.address
+        response = requests.post('{address}/containers/{uid}/stop'.format(address=address, uid=uid))
+        log += str(response.status_code) + ": " + response.content
+        response = requests.delete('{address}/containers/{uid}'.format(address=address, uid=uid))
+        log = log + '\n' + str(response.status_code) + ": " + response.content
+        return log
+
 
     # the name is by the Qualisystems conventions
     def remote_refresh_ip(self, context, ports):
@@ -182,12 +208,16 @@ class DockerHostDriver (ResourceDriverInterface):
         """
         uid = self._get_vm_uui(context)
         self.power_on(context,uid)
+        self._get_api_session(context).SetResourceLiveStatus( self._get_remote_name(context),'Online')
+
 
 
     def PowerOff(self, context, ports):
         uid = self._get_vm_uui(context)
         address = context.resource.address
         requests.post('{address}/containers/{uid}/stop'.format(address=address, uid=uid))
+        self._get_api_session(context).SetResourceLiveStatus( self._get_remote_name(context),'Offline')
+
 
     # the name is by the Qualisystems conventions
     def PowerCycle(self, context, ports, delay):

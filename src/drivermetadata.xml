@@ -3,39 +3,37 @@
     <Layout>
         <Category Name="Management">
 
-            <Command Description="" DisplayName="Show logs" Name="show_logs" Tags="remote_management,allow_shared" />
-            <Command Description="" DisplayName="Inspect" Name="inspect" Tags="remote_management,allow_shared" />
+            <Command Description="Get stdout and stderr logs from the app container" DisplayName="Show logs" Name="show_logs" Tags="remote_management,allow_shared" />
+            <Command Description="Get more detailed information about the container" DisplayName="Inspect" Name="inspect" Tags="remote_management,allow_shared" />
+            <Command Name="destroy" DisplayName="Destroy container" Description="Stop and delete the app" Tags="remote_virtualization,allow_shared"/>
+            <Command Name="power_on" DisplayName="Power On" Description="an example command" Tags="allow_unreserved">
+                <Parameters>
 
-
-          <Command Name="deploy_image" DisplayName="Deploy Image" Description="Deploys a docker container from image" Tags="allow_unreserved">
-               <Parameters>
-                 <Parameter Name="image" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
-                   <Parameter Name="env" Type="String" Mandatory = "True" DefaultValue="" DisplayName="env" Description=""/>
-                 <Parameter Name="port_config" Type="String" Mandatory = "True" DefaultValue="" DisplayName="port_config" Description=""/>
+                    <Parameter Name="vm_uuid" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
+                    <Parameter Name="resource_fullname" Type="String" Mandatory = "True" DefaultValue="s" DisplayName="image" Description=""/>
 
                 </Parameters>
-          </Command>
-
-          <Command Name="destroy" DisplayName="Destroy container" Description="an example command" Tags="remote_virtualization,allow_shared">
-          </Command>
-         <Command Name="power_on" DisplayName="Power On" Description="an example command" Tags="allow_unreserved">
-           <Parameters>
-
-               <Parameter Name="vm_uuid" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
-               <Parameter Name="resource_fullname" Type="String" Mandatory = "True" DefaultValue="s" DisplayName="image" Description=""/>
-
-           </Parameters>
-          </Command>
-            <Command Description="" DisplayName="Refresh Ip" Name="remote_refresh_ip" Tags="remote_connectivity,allow_shared" />
-
+            </Command>
         </Category>
-        <Category Name="Connectivity">
-            <Command Description="" DisplayName="Refresh Ip" Name="remote_refresh_ip" Tags="remote_connectivity,allow_shared" />
+        <Category Name="Hidden Commands">
+            <Command Description="Delete the VM only (internal command)" DisplayName="" Name="destroy_vm_only" Tags="remote_app_management,allow_shared" />
+
+            <Command Name="deploy_image" DisplayName="Deploy Image" Description="Deploys a docker container from image" Tags="allow_unreserved">
+                <Parameters>
+                    <Parameter Name="app_name" Type="String" Mandatory = "True" DefaultValue="" DisplayName="app_name" Description=""/>
+                    <Parameter Name="image" Type="String" Mandatory = "True" DefaultValue="" DisplayName="image" Description=""/>
+                    <Parameter Name="env" Type="String" Mandatory = "True" DefaultValue="" DisplayName="env" Description=""/>
+                    <Parameter Name="port_config" Type="String" Mandatory = "True" DefaultValue="" DisplayName="port_config" Description=""/>
+                </Parameters>
+            </Command>
+            <Command Description="Inspects the app and updates its IP address in CloudShell"
+                     DisplayName="Refresh Ip" Name="remote_refresh_ip" Tags="remote_connectivity,allow_shared" />
+
         </Category>
         <Category Name="Power">
-            <Command Description="" DisplayName="Power On" Name="PowerOn" Tags="power" />
-            <Command Description="" DisplayName="Power Off" Name="PowerOff" Tags="power,allow_shared" />
-            <Command Description="" DisplayName="Power Cycle" Name="PowerCycle" Tags="power" />
+            <Command Description="Powers on (starts) the container" DisplayName="Power On" Name="PowerOn" Tags="power" />
+            <Command Description="Powers off (stops) the container" DisplayName="Power Off" Name="PowerOff" Tags="power,allow_shared" />
+            <Command Description="Stops and then starts the container again" DisplayName="Power Cycle" Name="PowerCycle" Tags="power" />
         </Category>
     </Layout>
 </Driver>
