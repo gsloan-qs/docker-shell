@@ -22,7 +22,7 @@ class DockerHostDriver (ResourceDriverInterface):
     def cleanup(self):
         pass
 
-    def getContainers(self, context):
+    def get_containers(self, context):
         """
         Retrieves the docker containers currently active on the host/swarm
         :param context: This is the execution context automatically injected by CloudShell when running this command
@@ -34,7 +34,7 @@ class DockerHostDriver (ResourceDriverInterface):
         response = requests.get('{address}/containers/json'.format(address=address) )
         return response.json()
 
-    def destroy(self, context, ports):
+    def destroy_container(self, context, ports):
         """
         Destroys a running container, stopping and deleting it from CloudShell as well as from the Docker host/swarm
         :param context: This is the execution context automatically injected by CloudShell when running this command
@@ -51,25 +51,25 @@ class DockerHostDriver (ResourceDriverInterface):
         log+=str(response.status_code) + ": " + response.content
         response = requests.delete('{address}/containers/{uid}'.format(address=address, uid=uid) )
         log = log + '\n' + str(response.status_code) + ": " + response.content
-        session = CloudShellAPISession(host=context.connectivity.server_address,token_id=context.connectivity.admin_auth_token,domain='Global')
-        session.DeleteResource(context.remote_endpoints[0].name)
+        # session = CloudShellAPISession(host=context.connectivity.server_address,token_id=context.connectivity.admin_auth_token,domain='Global')
+        self._get_api_session(context).DeleteResource(context.remote_endpoints[0].name)
         return log
 
-    def deploy_image(self, context, image, env, port_config):
+    def deploy_image(self, context, source_docker_image, environment_variables_list, port_config):
         """
         Deploys a container from an image
         :param context: This is the execution context automatically injected by CloudShell when running this command
         :type context: cloudshell.shell.core.driver_context.ResourceCommandContext
-        :param image: The docker image to create the container from
-        :type image: str
-        :param env: Environment variables to use for the container, provided as comma separated list of name=value
-        :type env: str
+        :param source_docker_image: The docker image to create the container from
+        :type source_docker_image: str
+        :param environment_variables_list: Environment variables to use for the container, provided as comma separated list of name=value
+        :type environment_variables_list: str
         :param port_config: Additional ports to expose on the host, should be provided as a comma separated list
         :type port_config: str
         :return The deployed app container name and identifier
         :rtype str
         """
-        create_request_data = self._get__deploy_request(env,port_config,image)
+        create_request_data = self._get__deploy_request(environment_variables_list,port_config,source_docker_image)
 
         self._get_api_session(context).WriteMessageToReservationOutput(context.reservation.reservation_id,"sending: " +
                                                                        create_request_data)
@@ -89,9 +89,10 @@ class DockerHostDriver (ResourceDriverInterface):
 
         container_id = response.json()["Id"]
 
-        str = '{ "vm_name" : "%s", "vm_uuid" : "%s", "cloud_provider_resource_name" : "%s"}' % (image.replace('/','_').replace(':','_') ,container_id, context.resource.name)
+        formatted_return_str = '{ "vm_name" : "%s", "vm_uuid" : "%s", "cloud_provider_resource_name" : "%s"}' % \
+              (source_docker_image.replace('/','_').replace(':','_') ,container_id, context.resource.name)
 
-        return json.loads(str)
+        return json.loads(formatted_return_str)
 
     # the name is by the Qualisystems conventions
     def remote_refresh_ip(self, context, ports):
@@ -103,8 +104,8 @@ class DockerHostDriver (ResourceDriverInterface):
         :type ports: str
 
         """
-        json = self.inspect(context,ports)
-        ip = json["Node"]["IP"]
+        container_info_json = self.get_container_information(context,ports)
+        ip = container_info_json["Node"]["IP"]
         matching_resources = \
             self._get_api_session(context).FindResources(attributeValues=[AttributeNameValue("Private IP", ip)])\
                 .Resources
@@ -114,27 +115,25 @@ class DockerHostDriver (ResourceDriverInterface):
         else:
             address = context.resource.address
 
-        ports = json["NetworkSettings"]["Ports"]
+        ports = container_info_json["NetworkSettings"]["Ports"]
 
         #Todo: make the list of ports extensible by variable
-        if ('22/tcp' in ports):
-            attchanges = [ResourceAttributesUpdateRequest(context.remote_endpoints[0].name,
-                                                          [AttributeNameValue(Name="SSH_Port",
-                                                                              Value=ports['22/tcp'][0]['HostPort'])])]
-            self._get_api_session(context).SetAttributesValues(  resourcesAttributesUpdateRequests=attchanges)
+        attribute_value = ''
+        attribute_name = ''
+        if '22/tcp' in ports:
+            attribute_value = ports['22/tcp'][0]['HostPort']
+            attribute_name = 'SSH_Port'
 
-        if ('80/tcp' in ports):
-            attchanges = [ResourceAttributesUpdateRequest(context.remote_endpoints[0].name,
-                                                          [AttributeNameValue(Name="WWW_Port",
-                                                                              Value=ports['80/tcp'][0]['HostPort'])])]
-            self._get_api_session(context).SetAttributesValues(  resourcesAttributesUpdateRequests=attchanges)
+        if '80/tcp' in ports:
+            attribute_value = ports['80/tcp'][0]['HostPort']
+            attribute_name = 'WWW_Port'
 
-        if ('8000/tcp' in ports):
-            attchanges = [ResourceAttributesUpdateRequest(context.remote_endpoints[0].name,
-                                                          [AttributeNameValue(Name="WWW_Port",
-                                                                              Value=ports['8000/tcp'][0]['HostPort'])])]
-            self._get_api_session(context).SetAttributesValues(  resourcesAttributesUpdateRequests=attchanges)
+        if '8000/tcp' in ports:
+            attribute_value = ports['8080/tcp'][0]['HostPOrt']
+            attribute_name = 'WWW_Port'
 
+        attribute_changes = self._get_attribute_update_request(context, attribute_name, attribute_value)
+        self._get_api_session(context).SetAttributesValues(  resourcesAttributesUpdateRequests=attribute_changes)
         self._get_api_session(context).UpdateResourceAddress(resourceFullPath=context.remote_endpoints[0].name,
                                                              resourceAddress=address)
 
@@ -146,7 +145,13 @@ class DockerHostDriver (ResourceDriverInterface):
 
 
 
-    def inspect(self, context, ports ):
+    def _get_attribute_update_request(self, context, attribute_name, attribute_value):
+
+        return [ResourceAttributesUpdateRequest(context.remote_endpoints[0].name,
+                                                [AttributeNameValue(Name=attribute_name,Value=attribute_value)])]
+
+
+    def get_container_information(self, context, ports ):
         address = context.resource.address
         vm_info_json =context.remote_endpoints[0].app_context.deployed_app_json
         vm_info_obj = json.loads(vm_info_json)
@@ -174,7 +179,7 @@ class DockerHostDriver (ResourceDriverInterface):
         log+=str(response.status_code) + ": " + response.content
         return log
 
-    def _wrapInParenthesis(self, value):
+    def _wrap_in_parenthesis(self, value):
         value = value.strip()
         if not value.startswith('"'):
             value = '"' + value
@@ -189,7 +194,7 @@ class DockerHostDriver (ResourceDriverInterface):
         if len(env.strip()) > 0:
             env_variables = env
             env_variables_arr = env_variables.split(",")
-            env_variables = ', '.join([self._wrapInParenthesis(x) for x in env_variables_arr])
+            env_variables = ', '.join([self._wrap_in_parenthesis(x) for x in env_variables_arr])
             request_segments.append('"Env" : [{env_variables}]'.format(env_variables=env_variables))
         else:
             request_segments.append('"Env" : []')
